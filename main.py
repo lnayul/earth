@@ -3,239 +3,274 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>그린 디펜더: 2050 기후 시뮬레이션</title>
+    <title>탄소 순환 시뮬레이터: 우리가 바꾸면 지구가 변한다</title>
     <style>
         :root {
-            --primary-color: #2e7d32;
-            --secondary-color: #81c784;
-            --danger-color: #d32f2f;
-            --warning-color: #f57c00;
-            --bg-color: #f1f8e9;
-            --card-bg: #ffffff;
-            --text-color: #333333;
+            --bg-color: #0b132b;
+            --card-bg: rgba(28, 37, 65, 0.85);
+            --primary: #4cc9f0;
+            --accent-green: #57cc99;
+            --accent-red: #f72585;
+            --text-main: #edf2f4;
+            --text-sub: #8d99ae;
         }
 
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Pretendard', 'Apple SD Gothic Neo', sans-serif;
         }
 
         body {
             background-color: var(--bg-color);
-            color: var(--text-color);
+            color: var(--text-main);
+            min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
             padding: 20px;
+            background-image: radial-gradient(circle at 50% 10%, #1c2541 0%, #0b132b 80%);
         }
 
         .game-container {
             width: 100%;
-            max-width: 600px;
-            background-color: var(--card-bg);
-            border-radius: 16px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            max-width: 800px;
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
             overflow: hidden;
-            display: flex;
-            flex-direction: column;
         }
 
         header {
-            background: linear-gradient(135deg, #2e7d32, #1b5e20);
-            color: white;
-            padding: 20px;
             text-align: center;
+            margin-bottom: 25px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 15px;
         }
 
         header h1 {
-            font-size: 1.5rem;
-            margin-bottom: 5px;
+            font-size: 1.8rem;
+            color: var(--primary);
+            margin-bottom: 8px;
+            text-shadow: 0 0 10px rgba(76, 201, 240, 0.3);
         }
 
         header p {
-            font-size: 0.9rem;
-            opacity: 0.9;
+            font-size: 0.95rem;
+            color: var(--text-sub);
+            line-height: 1.4;
         }
 
-        .status-panel {
-            padding: 15px 20px;
-            background-color: #f9fbe7;
-            border-bottom: 1px solid #e0e0e0;
+        /* Earth Display & Status */
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 20px;
+            margin-bottom: 25px;
+            background: rgba(11, 19, 43, 0.6);
+            padding: 20px;
+            border-radius: 15px;
+        }
+
+        .earth-visual {
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            align-items: center;
+            justify-content: center;
         }
 
-        .status-row {
+        .earth-icon {
+            font-size: 5rem;
+            filter: drop-shadow(0 0 15px rgba(87, 204, 153, 0.5));
+            transition: all 0.5s ease;
+        }
+
+        .year-badge {
+            margin-top: 10px;
+            background: var(--primary);
+            color: #000;
+            font-weight: bold;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 1.1rem;
+        }
+
+        .stats-panel {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .stat-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .stat-label {
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            font-weight: bold;
-            font-size: 0.95rem;
+            font-size: 0.85rem;
+            color: var(--text-sub);
         }
 
-        .hp-bar-container {
+        .bar-bg {
             width: 100%;
-            height: 20px;
-            background-color: #e0e0e0;
-            border-radius: 10px;
+            height: 14px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 7px;
             overflow: hidden;
             position: relative;
         }
 
-        .hp-bar {
+        .bar-fill {
             height: 100%;
             width: 100%;
-            background-color: var(--primary-color);
+            border-radius: 7px;
             transition: width 0.5s ease, background-color 0.5s ease;
         }
 
-        .stats-grid {
+        #hp-bar { background-color: var(--accent-green); }
+        #co2-bar { background-color: var(--primary); }
+        #budget-bar { background-color: #f7b801; }
+
+        /* Card / Event Area */
+        .event-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .event-title {
+            font-size: 1.1rem;
+            color: #fff;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .event-desc {
+            font-size: 0.95rem;
+            line-height: 1.5;
+            color: var(--text-main);
+            margin-bottom: 15px;
+        }
+
+        .quiz-box {
+            background: rgba(76, 201, 240, 0.1);
+            border-left: 4px solid var(--primary);
+            padding: 10px 15px;
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+            border-radius: 0 8px 8px 0;
+        }
+
+        /* Choice Buttons */
+        .options-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            font-size: 0.9rem;
-        }
-
-        .stat-item {
-            background: white;
-            padding: 6px 12px;
-            border-radius: 8px;
-            border: 1px solid #c8e6c9;
-            display: flex;
-            justify-content: space-between;
-        }
-
-        .content-area {
-            padding: 25px;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .year-indicator {
-            font-size: 1.1rem;
-            font-weight: bold;
-            color: var(--primary-color);
-            text-align: center;
-        }
-
-        .scenario-box {
-            background-color: #f4f9f4;
-            border-left: 5px solid var(--primary-color);
-            padding: 15px;
-            border-radius: 0 8px 8px 0;
-            font-size: 1rem;
-            line-height: 1.5;
-            min-height: 80px;
-        }
-
-        .choices-container {
-            display: flex;
-            flex-direction: column;
             gap: 12px;
         }
 
-        .choice-btn {
-            background-color: white;
-            border: 2px solid #c8e6c9;
-            padding: 15px;
-            border-radius: 10px;
+        .btn-option {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: var(--text-main);
+            padding: 14px;
+            border-radius: 12px;
             cursor: pointer;
             text-align: left;
-            font-size: 0.95rem;
             transition: all 0.2s ease;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
         }
 
-        .choice-btn:hover:not(:disabled) {
-            background-color: #e8f5e9;
-            border-color: var(--primary-color);
+        .btn-option:hover {
+            background: rgba(76, 201, 240, 0.2);
+            border-color: var(--primary);
             transform: translateY(-2px);
         }
 
-        .choice-btn:active:not(:disabled) {
-            transform: translateY(0);
-        }
-
-        .feedback-box {
-            margin-top: 10px;
-            padding: 12px;
-            border-radius: 8px;
-            background-color: #e3f2fd;
-            color: #0d47a1;
-            font-size: 0.9rem;
-            line-height: 1.4;
-            display: none;
-        }
-
-        .next-btn {
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            padding: 12px;
-            border-radius: 8px;
+        .btn-option .option-title {
             font-weight: bold;
-            cursor: pointer;
-            font-size: 1rem;
-            transition: background-color 0.2s;
-            display: none;
+            font-size: 0.95rem;
+            color: var(--primary);
         }
 
-        .next-btn:hover {
-            background-color: #1b5e20;
+        .btn-option .option-desc {
+            font-size: 0.8rem;
+            color: var(--text-sub);
         }
 
-        .screen {
-            display: none;
-        }
-
-        .screen.active {
+        /* Ending Screen */
+        .ending-screen {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(11, 19, 43, 0.95);
             display: flex;
             flex-direction: column;
-            gap: 20px;
-        }
-
-        .intro-screen, .ending-screen {
-            text-align: center;
+            justify-content: center;
+            align-items: center;
             padding: 30px;
-            gap: 20px;
-        }
-
-        .intro-screen h2, .ending-screen h2 {
-            font-size: 1.6rem;
-            color: var(--primary-color);
-        }
-
-        .intro-screen p, .ending-screen p {
-            line-height: 1.6;
-            color: #555;
-        }
-
-        .start-btn {
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            padding: 15px 30px;
-            border-radius: 30px;
-            font-size: 1.1rem;
-            font-weight: bold;
-            cursor: pointer;
-            box-shadow: 0 4px 10px rgba(46, 125, 50, 0.3);
-            transition: transform 0.2s;
-        }
-
-        .start-btn:hover {
-            transform: scale(1.05);
-        }
-
-        .earth-visual {
-            font-size: 3rem;
             text-align: center;
-            margin-bottom: -10px;
+            z-index: 10;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+        }
+
+        .ending-screen.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .ending-title {
+            font-size: 2rem;
+            margin-bottom: 15px;
+        }
+
+        .ending-desc {
+            font-size: 1rem;
+            line-height: 1.6;
+            margin-bottom: 25px;
+            max-width: 600px;
+            color: var(--text-sub);
+        }
+
+        .btn-restart {
+            background: var(--primary);
+            color: #000;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-restart:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(76, 201, 240, 0.5);
+        }
+
+        @media (max-width: 600px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+            .options-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
@@ -243,329 +278,290 @@
 
 <div class="game-container">
     <header>
-        <h1>🌍 그린 디펜더: 2050</h1>
-        <p>기후 변화 대응 정책 시뮬레이션 게임</p>
+        <h1>탄소 순환 시뮬레이터: 우리가 바꾸면 지구가 변한다</h1>
+        <p>기후변화는 지구시스템 전체의 문제입니다. 올바른 정책 선택과 퀴즈를 통해 2050년까지 지구를 지켜내세요!</p>
     </header>
 
-    <!-- 시작 화면 -->
-    <div id="introScreen" class="screen active intro-screen">
-        <div class="earth-visual">🌱</div>
-        <h2>지구를 구하기 위한 당신의 선택</h2>
-        <p>
-            환영합니다! 당신은 국제 기후 대책 위원회의 최고 의사결정자입니다.<br>
-            매년 쏟아지는 기후 위기 상황 속에서 최선의 정책을 선택하여<br>
-            <strong>2050년까지 지구 체력(HP)을 유지</strong>하고 지구를 구해주세요!
-        </p>
-        <button class="start-btn" onclick="startGame()">게임 시작하기</button>
-    </div>
+    <div class="dashboard">
+        <div class="earth-visual">
+            <div class="earth-icon" id="earth-emoji">🌍</div>
+            <div class="year-badge" id="year-display">2024년</div>
+        </div>
 
-    <!-- 게임 플레이 화면 -->
-    <div id="gameScreen" class="screen">
-        <div class="status-panel">
-            <div class="status-row">
-                <span>지구 체력 (HP)</span>
-                <span id="hpText">100 / 100</span>
-            </div>
-            <div class="hp-bar-container">
-                <div id="hpBar" class="hp-bar"></div>
-            </div>
-            <div class="stats-grid">
-                <div class="stat-item">
-                    <span>탄소 농도:</span>
-                    <span id="carbonText">410 ppm</span>
+        <div class="stats-panel">
+            <div class="stat-group">
+                <div class="stat-label">
+                    <span>지구 건강도 (HP)</span>
+                    <span id="hp-val">100 / 100</span>
                 </div>
-                <div class="stat-item">
-                    <span>잔여 예산:</span>
-                    <span id="budgetText">100 억$</span>
+                <div class="bar-bg">
+                    <div class="bar-fill" id="hp-bar" style="width: 100%;"></div>
+                </div>
+            </div>
+
+            <div class="stat-group">
+                <div class="stat-label">
+                    <span>대기 중 CO₂ 농도</span>
+                    <span id="co2-val">420 ppm</span>
+                </div>
+                <div class="bar-bg">
+                    <div class="bar-fill" id="co2-bar" style="width: 42%;"></div>
+                </div>
+            </div>
+
+            <div class="stat-group">
+                <div class="stat-label">
+                    <span>글로벌 예산</span>
+                    <span id="budget-val">100억 달러</span>
+                </div>
+                <div class="bar-bg">
+                    <div class="bar-fill" id="budget-bar" style="width: 100%;"></div>
                 </div>
             </div>
         </div>
+    </div>
 
-        <div class="content-area">
-            <div id="yearIndicator" class="year-indicator">📅 2024년</div>
-            <div id="scenarioBox" class="scenario-box">
-                시나리오가 여기에 표시됩니다.
-            </div>
+    <div class="event-card">
+        <div class="event-title" id="event-title">🌱 2024년 기후 의제: 에너지 정책 결정</div>
+        <div class="event-desc" id="event-desc">세계 에너지 수요가 늘어나고 있습니다. 새로운 전력망 구축을 위한 핵심 정책을 선택하세요.</div>
+        <div class="quiz-box" id="quiz-box">
+            💡 <b>지구과학 Q:</b> 화석연료 연소 시 발생하는 주요 온실가스는 무엇일까요?
+        </div>
 
-            <div id="choicesContainer" class="choices-container">
-                <!-- 선택지 버튼들이 동적으로 생성됩니다 -->
-            </div>
-
-            <div id="feedbackBox" class="feedback-box">
-                피드백 내용이 여기에 표시됩니다.
-            </div>
-
-            <button id="nextBtn" class="next-btn" onclick="nextTurn()">다음 해로 진행하기</button>
+        <div class="options-grid">
+            <button class="btn-option" onclick="makeChoice(0)">
+                <div class="option-title" id="opt0-title">A안: 재생에너지 비중 40% 확대</div>
+                <div class="option-desc" id="opt0-desc">예산 20억 소요, CO₂ 억제 효과 큼. (퀴즈 정답 시 HP 회복)</div>
+            </button>
+            <button class="btn-option" onclick="makeChoice(1)">
+                <div class="option-title" id="opt1-title">B안: 석탄 화력발전소 증설</div>
+                <div class="option-desc" id="opt1-desc">예산 단 5억 소요, CO₂ 배출량 대폭 증가. (지구 HP 감소)</div>
+            </button>
         </div>
     </div>
 
-    <!-- 엔딩 화면 -->
-    <div id="endingScreen" class="screen ending-screen">
-        <div id="endingVisual" class="earth-visual">🏆</div>
-        <h2 id="endingTitle">엔딩 제목</h2>
-        <p id="endingDesc">엔딩 설명이 여기에 표시됩니다.</p>
-        <button class="start-btn" onclick="resetGame()">다시 도전하기</button>
+    <!-- Ending Overlay -->
+    <div class="ending-screen" id="ending-screen">
+        <div class="ending-title" id="ending-title">지구 구출 성공!</div>
+        <div class="ending-desc" id="ending-desc">설명...</div>
+        <button class="btn-restart" onclick="restartGame()">시뮬레이션 다시 시작</button>
     </div>
 </div>
 
 <script>
-    // 게임 데이터 및 시나리오 정의
-    const scenarios = [
+    const scenarioData = [
         {
             year: 2024,
-            text: "첫해부터 폭염과 가뭄이 전 세계를 강타했습니다. 화력발전소 비중을 줄이고 재생에너지 투자를 대폭 늘려야 한다는 목소리가 높습니다.",
-            choices: [
+            title: "🌱 2024년: 에너지 전환 정책",
+            desc: "세계적으로 전력 수요가 크게 늘고 있습니다. 앞으로의 주력 에너지원을 어디에 투자하시겠습니까?",
+            quiz: "💡 <b>지구과학 Q:</b> 대기 중 온실효과를 유발하여 지구 기온을 높이는 대표적 기권 탄소 형태는 이산화탄소(CO₂)입니다.",
+            options: [
                 {
-                    text: "A안: 대규모 재생에너지 보조금 지급 및 화력발전 조기 폐쇄 추진",
-                    hpChange: 0,
-                    carbonChange: -15,
-                    budgetChange: -30,
-                    feedback: "탁월한 선택입니다! 탄소 배출이 크게 줄었지만, 초기 예산 소모가 컸습니다."
+                    title: "A안: 태양광 및 풍력 발전 확대",
+                    desc: "비용: 20억 | CO₂ -10 ppm | HP +5",
+                    cost: 20, co2Delta: -10, hpDelta: 5,
+                    isCorrect: true
                 },
                 {
-                    text: "B안: 경제 성장을 위해 화력발전을 유지하되, 효율성 개선 장치만 도입",
-                    hpChange: -15,
-                    carbonChange: +10,
-                    budgetChange: -10,
-                    feedback: "경제적 타격은 줄었으나, 탄소 배출이 늘어나며 지구 온도가 치솟았습니다."
+                    title: "B안: 석탄 화력발전소 신규 건설",
+                    desc: "비용: 5억 | CO₂ +25 ppm | HP -15",
+                    cost: 5, co2Delta: 25, hpDelta: -15,
+                    isCorrect: false
                 }
             ]
         },
         {
-            year: 2028,
-            text: "내연기관 자동차로 인한 도심 대기오염이 심각해졌습니다. 강력한 교통 규제 카드를 꺼내들 시점입니다.",
-            choices: [
+            year: 2030,
+            title: "🌳 2030년: 산림 생태계 보호",
+            desc: "아마존과 주요 열대우림의 개발 압력이 거세지고 있습니다. 탄소 흡수원인 산림을 어떻게 관리하시겠습니까?",
+            quiz: "💡 <b>지구과학 Q:</b> 식물권은 광합성을 통해 대기 중 이산화탄소를 흡수하여 유기물 형태로 탄소를 저장합니다.",
+            options: [
                 {
-                    text: "A안: 2035년까지 내연기관 차량 판매 전면 금지 및 전기차 보급 가속화",
-                    hpChange: +5,
-                    carbonChange: -20,
-                    budgetChange: -25,
-                    feedback: "친환경 교통 체계로의 전환에 성공했습니다. 공기가 한층 맑아졌습니다."
+                    title: "A안: 열대우림 보호구역 지정 및 복원",
+                    desc: "비용: 15억 | CO₂ -15 ppm | HP +10",
+                    cost: 15, co2Delta: -15, hpDelta: 10,
+                    isCorrect: true
                 },
                 {
-                    text: "B안: 자동차 업계 반발을 고려해 친환경차 세제 혜택만 자율적으로 운영",
-                    hpChange: -10,
-                    carbonChange: +5,
-                    budgetChange: -5,
-                    feedback: "변화의 속도가 너무 느립니다. 대기오염과 탄소 수치가 여전히 높습니다."
+                    title: "B안: 무제한 목재 및 농경지 개발 허용",
+                    desc: "비용: -10억(수익) | CO₂ +30 ppm | HP -20",
+                    cost: -10, co2Delta: 30, hpDelta: -20,
+                    isCorrect: false
                 }
             ]
         },
         {
-            year: 2033,
-            text: "지구 온난화로 북극 빙하가 빠르게 녹아내리며 해수면 상승 위기가 고조되고 있습니다. 대규모 해안 방재 대책이 필요합니다.",
-            choices: [
+            year: 2036,
+            title: "🌊 2036년: 해양 산성화 위기",
+            desc: "대기 중 CO₂ 증가는 해양 흡수량 증가로 이어져 해양 산성화(pH 감소)를 일으키고 산호초를 파괴합니다.",
+            quiz: "💡 <b>지구과학 Q:</b> 대기 중 이산화탄소가 바다에 많이 용해될수록 해수는 산성화(수권 변화)됩니다.",
+            options: [
                 {
-                    text: "A안: 대대적인 해안 방벽 건설 및 저지대 주민 대피 계획 수립",
-                    hpChange: -5,
-                    carbonChange: 0,
-                    budgetChange: -35,
-                    feedback: "막대한 예산이 들었지만 해수면 상승으로부터 시민들의 안전을 지켰습니다."
+                    title: "A안: 해양 생태계 보호구역 & 탄소 포집 기술(CCUS)",
+                    desc: "비용: 25억 | CO₂ -20 ppm | HP +10",
+                    cost: 25, co2Delta: -20, hpDelta: 10,
+                    isCorrect: true
                 },
                 {
-                    text: "B안: 방재 예산을 아껴 근본적인 해양 생태계 복원 및 탄소 흡수원(숲/갯벌) 확충에 투자",
-                    hpChange: +10,
-                    carbonChange: -25,
-                    budgetChange: -20,
-                    feedback: "자연의 자정 능력을 높여 탄소 흡수가 늘어났습니다. 장기적으로 매우 현명한 선택입니다!"
+                    title: "B안: 방치 후 연안 공업단지 추가 개발",
+                    desc: "비용: 0억 | CO₂ +20 ppm | HP -15",
+                    cost: 0, co2Delta: 20, hpDelta: -15,
+                    isCorrect: false
                 }
             ]
         },
         {
-            year: 2038,
-            text: "산업계 전반에서 탄소세 도입에 대한 반발이 거셉니다. 하지만 기후 위기는 임계점을 향해가고 있습니다.",
-            choices: [
+            year: 2042,
+            title: "🧊 2042년: 빙권 융해와 수면 상승",
+            desc: "북극 및 그린란드 빙하가 빠르게 녹으며 반사율(알베도)이 감소하고 해수면이 상승하고 있습니다.",
+            quiz: "💡 <b>지구과학 Q:</b> 빙권의 얼음이 녹으면 햇빛 반사량이 줄어들어 지구 온난화가 가속화되는 양의 피드백이 발생합니다.",
+            options: [
                 {
-                    text: "A안: 강력한 탄소 국경세 및 고탄소 배출 기업에 무거운 벌칙 부과",
-                    hpChange: +5,
-                    carbonChange: -20,
-                    budgetChange: +15, // 벌금 수입
-                    feedback: "기업들이 마침내 친환경 공정으로 대거 전환하기 시작했습니다. 탄소 수치가 안정화됩니다."
+                    title: "A안: 탄소 배출 강력 규제 및 넷제로 이행",
+                    desc: "비용: 30억 | CO₂ -25 ppm | HP +15",
+                    cost: 30, co2Delta: -25, hpDelta: 15,
+                    isCorrect: true
                 },
                 {
-                    text: "B안: 기업의 자발적 감축에 맡기고 규제를 최소화하여 경제 안정 도모",
-                    hpChange: -20,
-                    carbonChange: +15,
-                    budgetChange: 0,
-                    feedback: "기업들은 눈앞의 이익을 쫓았고, 지구는 통제 불능의 온난화 궤도에 접어듭니다."
+                    title: "B안: 기후 적응 시설(방파제 구축)만 투자",
+                    desc: "비용: 15억 | CO₂ +10 ppm | HP -10",
+                    cost: 15, co2Delta: 10, hpDelta: -10,
+                    isCorrect: false
                 }
             ]
         },
         {
-            year: 2044,
-            text: "전 세계적인 식량 위기와 생물다양성 파괴 경보가 울렸습니다. 마지막 분수령이 될 대책을 선택하세요.",
-            choices: [
+            year: 2050,
+            title: "🔮 2050년: 지속 가능한 미래 선택",
+            desc: "탄소 중립 달성을 위한 마지막 분기점입니다. 사회 전반의 순환 경제 시스템 구축 여부를 결정해야 합니다.",
+            quiz: "💡 <b>지구과학 Q:</b> 지구시스템의 탄소 순환은 기권-수권-생물권-직권이 서로 밀접하게 연결되어 작동합니다.",
+            options: [
                 {
-                    text: "A안: 전 지구적 식량 안보 연대 결성 및 농업 부문 탄소 배출 감축 기술 전면 지원",
-                    hpChange: +10,
-                    carbonChange: -15,
-                    budgetChange: -25,
-                    feedback: "농업 혁신을 통해 식량 위기를 극복하고 생태계를 보호하는 데 성공했습니다."
+                    title: "A안: 전 지구적 순환 경제 및 친환경 기술 전면 도입",
+                    desc: "비용: 20억 | CO₂ -30 ppm | HP +10",
+                    cost: 20, co2Delta: -30, hpDelta: 10,
+                    isCorrect: true
                 },
                 {
-                    text: "B안: 기존 농업 방식을 유지하며 개별 국가의 자율 해결 유도",
-                    hpChange: -20,
-                    carbonChange: +10,
-                    budgetChange: -5,
-                    feedback: "기후 재앙으로 인한 식량 생산량 급감으로 지구 생태계가 큰 타격을 입었습니다."
-                }
-            ]
-        },
-        {
-            year: 2049,
-            text: "2050년의 문턱입니다. 마지막으로 남은 예산을 지구의 미래에 모두 쏟아부어야 합니다.",
-            choices: [
-                {
-                    text: "A안: 전 지구적 탄소 포집 기술(CCUS) 대규모 상용화 및 숲 복원 프로젝트 완료",
-                    hpChange: +15,
-                    carbonChange: -30,
-                    budgetChange: -30,
-                    feedback: "대기 중의 남은 탄소까지 깔끔하게 정화하며 마침내 지속 가능한 지구를 만들었습니다!"
-                },
-                {
-                    text: "B안: 현재 상태 유지 및 기후 적응 체계 유지",
-                    hpChange: -15,
-                    carbonChange: 0,
-                    budgetChange: 0,
-                    feedback: "변화를 멈춘 사이에 기후 불안정성이 최고조에 달했습니다."
+                    title: "B안: 화석연료 중심의 기존 경제 체제 유지",
+                    desc: "비용: 0억 | CO₂ +40 ppm | HP -25",
+                    cost: 0, co2Delta: 40, hpDelta: -25,
+                    isCorrect: false
                 }
             ]
         }
     ];
 
-    let currentTurn = 0;
-    let gameState = {
-        hp: 100,
-        carbon: 410,
-        budget: 100
-    };
-
-    // DOM 요소들
-    const introScreen = document.getElementById('introScreen');
-    const gameScreen = document.getElementById('gameScreen');
-    const endingScreen = document.getElementById('endingScreen');
-    
-    const hpText = document.getElementById('hpText');
-    const hpBar = document.getElementById('hpBar');
-    const carbonText = document.getElementById('carbonText');
-    const budgetText = document.getElementById('budgetText');
-    const yearIndicator = document.getElementById('yearIndicator');
-    const scenarioBox = document.getElementById('scenarioBox');
-    const choicesContainer = document.getElementById('choicesContainer');
-    const feedbackBox = document.getElementById('feedbackBox');
-    const nextBtn = document.getElementById('nextBtn');
-
-    function startGame() {
-        currentTurn = 0;
-        gameState = {
-            hp: 100,
-            carbon: 410,
-            budget: 100
-        };
-        introScreen.classList.remove('active');
-        endingScreen.classList.remove('active');
-        gameScreen.classList.add('active');
-        updateUI();
-        loadScenario();
-    }
+    let currentStep = 0;
+    let hp = 100;
+    let co2 = 420; // ppm
+    let budget = 100; // 억 달러
 
     function updateUI() {
-        hpText.textContent = `${gameState.hp} / 100`;
-        hpBar.style.width = `${Math.max(0, Math.min(100, gameState.hp))}%`;
-        
-        // HP 바 색상 동적 변경
-        if (gameState.hp > 60) {
-            hpBar.style.backgroundColor = 'var(--primary-color)';
-        } else if (gameState.hp > 30) {
-            hpBar.style.backgroundColor = 'var(--warning-color)';
+        const scenario = scenarioData[currentStep];
+
+        // Header and Year
+        document.getElementById('year-display').innerText = `${scenario.year}년`;
+        document.getElementById('event-title').innerText = scenario.title;
+        document.getElementById('event-desc').innerText = scenario.desc;
+        document.getElementById('quiz-box').innerHTML = scenario.quiz;
+
+        // Bars & Stats
+        document.getElementById('hp-val').innerText = `${hp} / 100`;
+        document.getElementById('hp-bar').style.width = `${Math.max(0, Math.min(100, hp))}%`;
+
+        document.getElementById('co2-val').innerText = `${co2} ppm`;
+        // Normalize 350ppm ~ 600ppm for bar width
+        let co2Percent = Math.min(100, Math.max(0, ((co2 - 350) / 250) * 100));
+        document.getElementById('co2-bar').style.width = `${co2Percent}%`;
+
+        document.getElementById('budget-val').innerText = `${budget}억 달러`;
+        document.getElementById('budget-bar').style.width = `${Math.max(0, Math.min(100, budget))}%`;
+
+        // Earth Mood Dynamic Change
+        const earthEmoji = document.getElementById('earth-emoji');
+        if (hp >= 75) {
+            earthEmoji.innerText = "🌍";
+            document.getElementById('hp-bar').style.backgroundColor = 'var(--accent-green)';
+        } else if (hp >= 40) {
+            earthEmoji.innerText = "🌏";
+            document.getElementById('hp-bar').style.backgroundColor = '#f7b801';
         } else {
-            hpBar.style.backgroundColor = 'var(--danger-color)';
+            earthEmoji.innerText = "🔥";
+            document.getElementById('hp-bar').style.backgroundColor = 'var(--accent-red)';
         }
 
-        carbonText.textContent = `${gameState.carbon} ppm`;
-        budgetText.textContent = `${gameState.budget} 억$`;
+        // Options Text
+        document.getElementById('opt0-title').innerText = scenario.options[0].title;
+        document.getElementById('opt0-desc').innerText = scenario.options[0].desc;
+        document.getElementById('opt1-title').innerText = scenario.options[1].title;
+        document.getElementById('opt1-desc').innerText = scenario.options[1].desc;
     }
 
-    function loadScenario() {
-        if (currentTurn >= scenarios.length || gameState.hp <= 0) {
-            endGame();
+    function makeChoice(optionIndex) {
+        const scenario = scenarioData[currentStep];
+        const selected = scenario.options[optionIndex];
+
+        // Apply changes
+        budget -= selected.cost;
+        co2 += selected.co2Delta;
+        hp += selected.hpDelta;
+
+        // Clamp values
+        if (hp > 100) hp = 100;
+
+        // Check lose condition
+        if (hp <= 0) {
+            hp = 0;
+            showEnding(false);
             return;
         }
 
-        const scenario = scenarios[currentTurn];
-        yearIndicator.textContent = `📅 ${scenario.year}년`;
-        scenarioBox.textContent = scenario.text;
-        feedbackBox.style.display = 'none';
-        nextBtn.style.display = 'none';
+        // Advance step
+        currentStep++;
 
-        choicesContainer.innerHTML = '';
-        scenario.choices.forEach((choice, index) => {
-            const btn = document.createElement('button');
-            btn.className = 'choice-btn';
-            btn.textContent = choice.text;
-            btn.onclick = () => selectChoice(index);
-            choicesContainer.appendChild(btn);
-        });
+        if (currentStep >= scenarioData.length) {
+            showEnding(true);
+        } else {
+            updateUI();
+        }
     }
 
-    function selectChoice(choiceIndex) {
-        const scenario = scenarios[currentTurn];
-        const choice = scenario.choices[choiceIndex];
+    function showEnding(isSuccess) {
+        const screen = document.getElementById('ending-screen');
+        const title = document.getElementById('ending-title');
+        const desc = document.getElementById('ending-desc');
 
-        // 수치 반영
-        gameState.hp = Math.max(0, Math.min(100, gameState.hp + choice.hpChange));
-        gameState.carbon += choice.carbonChange;
-        gameState.budget = Math.max(0, gameState.budget + choice.budgetChange);
+        screen.classList.add('active');
 
+        if (isSuccess && hp > 0) {
+            title.innerText = "🎉 2050년 지구 구출 성공!";
+            title.style.color = "var(--accent-green)";
+            desc.innerHTML = `<b>최종 지구 건강도: ${hp} HP / CO₂ 농도: ${co2} ppm</b><br><br>` +
+                `당신의 현명한 정책 결정으로 지구시스템의 탄소 순환이 균형을 되찾았습니다!<br>` +
+                `대기, 해양, 산림, 빙권이 안정을 유지하며 인류는 지속 가능한 미래를 맞이했습니다.`;
+        } else {
+            title.innerText = "🚨 지구 위기 발생 (경고)";
+            title.style.color = "var(--accent-red)";
+            desc.innerHTML = `<b>최종 지구 건강도: ${hp} HP / CO₂ 농도: ${co2} ppm</b><br><br>` +
+                `탄소 배출 급증과 환경 파괴로 인해 지구 연쇄 시스템이 붕괴되었습니다.<br>` +
+                `해양 산성화, 빙하 융해, 극심한 이상기후로 지구가 회복 불능 상태에 빠졌습니다.<br>` +
+                `탄소 배출을 줄이고 탄소 흡수원을 회복하기 위한 노력이 다시 필요합니다!`;
+        }
+    }
+
+    function restartGame() {
+        currentStep = 0;
+        hp = 100;
+        co2 = 420;
+        budget = 100;
+        document.getElementById('ending-screen').classList.remove('active');
         updateUI();
-
-        // 선택지 비활성화 및 선택 효과
-        const buttons = choicesContainer.getElementsByClassName('choice-btn');
-        for (let btn of buttons) {
-            btn.disabled = true;
-            btn.style.opacity = '0.6';
-        }
-        buttons[choiceIndex].style.opacity = '1';
-        buttons[choiceIndex].style.borderColor = 'var(--primary-color)';
-        buttons[choiceIndex].style.backgroundColor = '#e8f5e9';
-
-        // 피드백 표시
-        feedbackBox.textContent = choice.feedback;
-        feedbackBox.style.display = 'block';
-
-        // HP가 0이 되면 즉시 게임 종료
-        if (gameState.hp <= 0) {
-            setTimeout(endGame, 1500);
-            return;
-        }
-
-        nextBtn.style.display = 'block';
     }
 
-    function nextTurn() {
-        currentTurn++;
-        loadScenario();
-    }
-
-    function endGame() {
-        gameScreen.classList.remove('active');
-        endingScreen.classList.add('active');
-
-        const endingVisual = document.getElementById('endingVisual');
-        const endingTitle = document.getElementById('endingTitle');
-        const endingDesc = document.getElementById('endingDesc');
-
-        if (gameState.hp > 0 && currentTurn >= scenarios.length) {
-            endingVisual.textContent = '🌟';
-            endingTitle.textContent = '지구 구출 성공! (2050 지속가능성 달성)';
-            endingDesc.innerHTML = `축하합니다! 당신의 현명한 정책 선택 덕분에 지구는 최악의 기후 위기를 이겨내고 2050년에 도달했습니다.<br>탄소 수치: <strong>${gameState.carbon} ppm</strong>, 잔여 HP: <strong>${gameState.hp}</strong><br>미래 세대에게 건강한 지구를 물려주었습니다!`;
-        } else {
-            endingVisual.textContent = '🚨';
-            endingTitle.textContent = '지구 위기 발생! (게임 오버)';
-            endingDesc.innerHTML = `기후 재앙을 막지 못해 지구 체력이 바닥났습니다.<br>지구의 탄소 농도가 임계점을 초과하여 생태계가 붕괴되었습니다.<br>지속 가능한 미래를 위한 과감하고 올바른 선택의 중요성을 다시 한번 깨닫게 됩니다.`;
-        }
-    }
+    // Initialize Game UI
+    updateUI();
 </script>
-
 </body>
 </html>
+  
